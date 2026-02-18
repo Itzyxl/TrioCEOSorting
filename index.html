@@ -474,10 +474,13 @@
         @media (max-width: 860px) {
             .numbers {
                 grid-template-columns: repeat(6, minmax(0, 1fr));
+                gap: 6px;
             }
             .num-card {
-                height: 52px;
-                font-size: 16px;
+                height: 64px !important;
+                aspect-ratio: unset;
+                font-size: 14px !important;
+                border-radius: 12px;
             }
         }
         
