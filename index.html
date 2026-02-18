@@ -593,6 +593,22 @@
         .mono {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
         }
+
+        /* SWAP ANIMATION */
+        @keyframes swapFloat {
+            0%   { transform: translateY(0)     scale(1);    }
+            30%  { transform: translateY(-42px) scale(1.08); }
+            70%  { transform: translateY(-42px) scale(1.08); }
+            100% { transform: translateY(0)     scale(1);    }
+        }
+
+        .num-card.swapping {
+            animation: swapFloat 0.44s cubic-bezier(.34, 1.56, .64, 1) both;
+            position: relative;
+            z-index: 10;
+            border-color: rgba(47, 230, 255, .65) !important;
+            box-shadow: 0 32px 80px rgba(47, 230, 255, .30) !important;
+        }
     </style>
 </head>
 
@@ -857,19 +873,9 @@
         const SORTS = ['bubble', 'insertion', 'selection'];
 
         const state = {
-            bubble: {
-                arr: [],
-                autoTimer: null
-            },
-            insertion: {
-                arr: [],
-                autoTimer: null
-            },
-            selection: {
-                arr: [],
-                autoTimer: null,
-                stepI: 0
-            }
+            bubble:    { arr: [], autoTimer: null, animTimers: [], gen: 0 },
+            insertion: { arr: [], autoTimer: null, animTimers: [], gen: 0 },
+            selection: { arr: [], autoTimer: null, animTimers: [], gen: 0, stepI: 0 }
         };
 
         const dom = {
@@ -936,11 +942,84 @@
         }
 
         function stopAuto(sort) {
-            const t = state[sort].autoTimer;
-            if (t) {
-                clearInterval(t);
-                state[sort].autoTimer = null;
+            if (state[sort].autoTimer) { clearTimeout(state[sort].autoTimer); state[sort].autoTimer = null; }
+            state[sort].animTimers.forEach(t => clearTimeout(t));
+            state[sort].animTimers = [];
+            state[sort].gen++;
+        }
+
+        /* Lift up → (slide if swap) → land */
+        function animateCompare(sort, idxA, idxB, doSwap, onDone) {
+            const myGen = state[sort].gen;
+            const cards = dom[sort].numbers.querySelectorAll('.num-card');
+            const cardA = cards[idxA];
+            const cardB = cards[idxB];
+            if (!cardA || !cardB) { if (myGen === state[sort].gen) onDone(); return; }
+
+            const dx = cardB.getBoundingClientRect().left - cardA.getBoundingClientRect().left;
+
+            [cardA, cardB].forEach(c => {
+                c.style.position = 'relative';
+                c.style.zIndex   = '20';
+                if (doSwap) {
+                    c.style.borderColor = 'rgba(47,230,255,.80)';
+                    c.style.boxShadow   = '0 36px 90px rgba(47,230,255,.35)';
+                } else {
+                    c.style.borderColor = 'rgba(255,200,87,.75)';
+                    c.style.boxShadow   = '0 24px 60px rgba(255,200,87,.28)';
+                }
+            });
+
+            /* Phase 1 – lift */
+            cardA.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
+            cardB.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
+            requestAnimationFrame(() => {
+                cardA.style.transform = 'translateY(-54px) scale(1.09)';
+                cardB.style.transform = 'translateY(-54px) scale(1.09)';
+            });
+
+            let timers;
+            if (doSwap) {
+                /* Phase 2 – slide across while airborne */
+                const t1 = setTimeout(() => {
+                    cardA.style.transition = 'transform 0.36s cubic-bezier(.4,0,.2,1)';
+                    cardB.style.transition = 'transform 0.36s cubic-bezier(.4,0,.2,1)';
+                    cardA.style.transform  = `translate(${dx}px, -54px) scale(1.09)`;
+                    cardB.style.transform  = `translate(${-dx}px, -54px) scale(1.09)`;
+                }, 260);
+
+                /* Phase 3 – land at new positions */
+                const t2 = setTimeout(() => {
+                    cardA.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
+                    cardB.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
+                    cardA.style.transform  = `translate(${dx}px, 0) scale(1)`;
+                    cardB.style.transform  = `translate(${-dx}px, 0) scale(1)`;
+                }, 630);
+
+                const t3 = setTimeout(() => {
+                    state[sort].animTimers = [];
+                    if (myGen === state[sort].gen) onDone();
+                }, 870);
+
+                timers = [t1, t2, t3];
+            } else {
+                /* No swap – hold up briefly, then land back */
+                const t1 = setTimeout(() => {
+                    cardA.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
+                    cardB.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
+                    cardA.style.transform  = 'translateY(0) scale(1)';
+                    cardB.style.transform  = 'translateY(0) scale(1)';
+                }, 380);
+
+                const t2 = setTimeout(() => {
+                    state[sort].animTimers = [];
+                    if (myGen === state[sort].gen) onDone();
+                }, 620);
+
+                timers = [t1, t2];
             }
+
+            state[sort].animTimers = timers;
         }
 
         function isAdjacent(i, j) {
@@ -1177,6 +1256,33 @@
            AUTO SORT (step-by-step)
            ========================= */
 
+        function autoBubbleStep(sort, i, j) {
+            if (state[sort].autoTimer === null) return;
+            const a = state[sort].arr;
+
+            if (i >= a.length - 1) {
+                state[sort].autoTimer = null;
+                setMsg(sort, 'Auto selesai. Klik Check untuk validasi.', 'good');
+                playSound(SFX.correct);
+                return;
+            }
+
+            if (j >= a.length - 1 - i) {
+                state[sort].autoTimer = setTimeout(() => autoBubbleStep(sort, i + 1, 0), 180);
+                return;
+            }
+
+            const doSwap = a[j] > a[j + 1];
+            animateCompare(sort, j, j + 1, doSwap, () => {
+                if (doSwap) {
+                    [a[j], a[j + 1]] = [a[j + 1], a[j]];
+                    playSound(SFX.swap);
+                    render(sort);
+                }
+                state[sort].autoTimer = setTimeout(() => autoBubbleStep(sort, i, j + 1), 180);
+            });
+        }
+
         function autoBubble(sort) {
             stopAuto(sort);
             const a = state[sort].arr;
@@ -1184,33 +1290,36 @@
                 setMsg(sort, 'Klik Random dulu ya.', 'bad');
                 return;
             }
-
-            let i = 0,
-                j = 0;
             setMsg(sort, 'Auto Bubble berjalan... (swap jika kiri > kanan)', '');
+            state[sort].autoTimer = setTimeout(() => autoBubbleStep(sort, 0, 0), 180);
+        }
 
-            state[sort].autoTimer = setInterval(() => {
-                if (i >= a.length - 1) {
-                    stopAuto(sort);
-                    setMsg(sort, 'Auto selesai. Klik Check untuk validasi.', 'good');
-                    playSound(SFX.correct);
-                    return;
+        function autoInsertionStep(sort, i, j) {
+            if (state[sort].autoTimer === null) return;
+            const a = state[sort].arr;
 
-                }
+            if (i >= a.length) {
+                state[sort].autoTimer = null;
+                setMsg(sort, 'Auto selesai. Klik Check untuk validasi.', 'good');
+                playSound(SFX.correct);
+                return;
+            }
 
-                if (j >= a.length - 1 - i) {
-                    j = 0;
-                    i++;
-                    return;
-                }
-
-                if (a[j] > a[j + 1]) {
-                    [a[j], a[j + 1]] = [a[j + 1], a[j]];
-                    playSound(SFX.swap);
-                    render(sort);
-                }
-                j++;
-            }, 520);
+            if (j > 0) {
+                const doSwap = a[j - 1] > a[j];
+                animateCompare(sort, j - 1, j, doSwap, () => {
+                    if (doSwap) {
+                        [a[j - 1], a[j]] = [a[j], a[j - 1]];
+                        playSound(SFX.swap);
+                        render(sort);
+                        state[sort].autoTimer = setTimeout(() => autoInsertionStep(sort, i, j - 1), 180);
+                    } else {
+                        state[sort].autoTimer = setTimeout(() => autoInsertionStep(sort, i + 1, i + 1), 180);
+                    }
+                });
+            } else {
+                state[sort].autoTimer = setTimeout(() => autoInsertionStep(sort, i + 1, i + 1), 180);
+            }
         }
 
         function autoInsertion(sort) {
@@ -1220,28 +1329,41 @@
                 setMsg(sort, 'Klik Random dulu ya.', 'bad');
                 return;
             }
-
-            let i = 1;
-            let j = 1;
             setMsg(sort, 'Auto Insertion berjalan... (menyisipkan angka ke kiri)', '');
+            state[sort].autoTimer = setTimeout(() => autoInsertionStep(sort, 1, 1), 180);
+        }
 
-            state[sort].autoTimer = setInterval(() => {
-                if (i >= a.length) {
-                    stopAuto(sort);
-                    setMsg(sort, 'Auto selesai. Klik Check untuk validasi.', 'good');
-                    return;
-                }
+        function autoSelectionScan(sort, i, j, minIdx) {
+            if (state[sort].autoTimer === null) return;
+            const a = state[sort].arr;
 
-                if (j > 0 && a[j - 1] > a[j]) {
-                    [a[j - 1], a[j]] = [a[j], a[j - 1]];
+            if (i >= a.length - 1) {
+                state[sort].autoTimer = null;
+                setMsg(sort, 'Auto selesai. Klik Check untuk validasi.', 'good');
+                playSound(SFX.correct);
+                return;
+            }
+
+            if (j < a.length) {
+                const nextMin = a[j] < a[minIdx] ? j : minIdx;
+                /* peek: show comparison between current minimum and candidate j */
+                animateCompare(sort, minIdx, j, false, () => {
+                    state[sort].autoTimer = setTimeout(() => autoSelectionScan(sort, i, j + 1, nextMin), 80);
+                });
+                return;
+            }
+
+            // scan done -> swap
+            if (minIdx !== i) {
+                animateCompare(sort, i, minIdx, true, () => {
+                    [a[i], a[minIdx]] = [a[minIdx], a[i]];
                     playSound(SFX.swap);
                     render(sort);
-                    j--;
-                } else {
-                    i++;
-                    j = i;
-                }
-            }, 520);
+                    state[sort].autoTimer = setTimeout(() => autoSelectionScan(sort, i + 1, i + 2, i + 1), 180);
+                });
+            } else {
+                state[sort].autoTimer = setTimeout(() => autoSelectionScan(sort, i + 1, i + 2, i + 1), 180);
+            }
         }
 
         function autoSelection(sort) {
@@ -1251,36 +1373,8 @@
                 setMsg(sort, 'Klik Random dulu ya.', 'bad');
                 return;
             }
-
-            let i = 0;
-            let j = 1;
-            let minIdx = 0;
             setMsg(sort, 'Auto Selection berjalan... (cari terkecil lalu swap)', '');
-
-            state[sort].autoTimer = setInterval(() => {
-                if (i >= a.length - 1) {
-                    stopAuto(sort);
-                    setMsg(sort, 'Auto selesai. Klik Check untuk validasi.', 'good');
-                    return;
-                }
-
-                if (j < a.length) {
-                    if (a[j] < a[minIdx]) minIdx = j;
-                    j++;
-                    return;
-                }
-
-                // end scan -> swap i with minIdx
-                if (minIdx !== i) {
-                    [a[i], a[minIdx]] = [a[minIdx], a[i]];
-                    playSound(SFX.swap);
-                    render(sort);
-                }
-
-                i++;
-                minIdx = i;
-                j = i + 1;
-            }, 520);
+            state[sort].autoTimer = setTimeout(() => autoSelectionScan(sort, 0, 1, 0), 180);
         }
 
         function auto(sort) {
