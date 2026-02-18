@@ -1,0 +1,1325 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trio CEO • Sorting Playground</title>
+    <meta name="description" content="Belajar Bubble Sort, Insertion Sort, dan Selection Sort bareng Trio CEO. Mode manual drag & drop dan auto." />
+
+    <style>
+         :root {
+            --bg0: #070A12;
+            --bg1: #0B1020;
+            --card: rgba(255, 255, 255, .06);
+            --card2: rgba(255, 255, 255, .085);
+            --stroke: rgba(255, 255, 255, .12);
+            --stroke2: rgba(255, 255, 255, .18);
+            --text: #EAF0FF;
+            --muted: rgba(234, 240, 255, .72);
+            --muted2: rgba(234, 240, 255, .55);
+            --brand: #7C5CFF;
+            --brand2: #2FE6FF;
+            --good: #33F29A;
+            --bad: #FF4D6D;
+            --warn: #FFC857;
+            --shadow: 0 18px 60px rgba(0, 0, 0, .45);
+            --r20: 20px;
+            --r26: 26px;
+            --r32: 32px;
+        }
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        html {
+            scroll-behavior: smooth
+        }
+        
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            color: var(--text);
+            background: radial-gradient(1200px 700px at 20% 10%, rgba(124, 92, 255, .35), transparent 60%), radial-gradient(1000px 600px at 85% 15%, rgba(47, 230, 255, .25), transparent 60%), radial-gradient(900px 700px at 55% 85%, rgba(51, 242, 154, .18), transparent 60%), linear-gradient(180deg, var(--bg0), var(--bg1));
+            overflow-x: hidden;
+        }
+        
+        a {
+            color: inherit;
+            text-decoration: none
+        }
+        
+        .wrap {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 0 18px
+        }
+        /* NAV */
+        
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(14px);
+            background: rgba(7, 10, 18, .55);
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+        }
+        
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 0;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            letter-spacing: .4px;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, .35), transparent 45%), linear-gradient(135deg, var(--brand), var(--brand2));
+            box-shadow: 0 16px 40px rgba(124, 92, 255, .25);
+            border: 1px solid rgba(255, 255, 255, .14);
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: flex-end
+        }
+        
+        .chip {
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            background: rgba(255, 255, 255, .04);
+            color: rgba(234, 240, 255, .9);
+            font-weight: 650;
+            font-size: 13px;
+            transition: .2s ease;
+        }
+        
+        .chip:hover {
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, .22)
+        }
+        /* HERO */
+        
+        .hero {
+            padding: 48px 0 22px
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.25fr .85fr;
+            gap: 18px
+        }
+        
+        @media (max-width: 980px) {
+            .hero-grid {
+                grid-template-columns: 1fr
+            }
+        }
+        
+        .hero-card {
+            border-radius: var(--r32);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .04));
+            border: 1px solid rgba(255, 255, 255, .12);
+            box-shadow: var(--shadow);
+            padding: 26px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-card:before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: radial-gradient(900px 500px at 20% 10%, rgba(124, 92, 255, .22), transparent 55%), radial-gradient(700px 450px at 85% 25%, rgba(47, 230, 255, .16), transparent 55%), radial-gradient(700px 450px at 40% 95%, rgba(51, 242, 154, .12), transparent 55%);
+            pointer-events: none;
+            filter: saturate(1.15);
+        }
+        
+        .hero-card>* {
+            position: relative
+        }
+        
+        .kicker {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .12);
+            color: rgba(234, 240, 255, .85);
+            font-weight: 650;
+            font-size: 13px;
+        }
+        
+        h1 {
+            margin: 14px 0 10px;
+            font-size: clamp(34px, 5vw, 58px);
+            line-height: 1.02;
+            letter-spacing: -1.2px;
+        }
+        
+        .grad {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 1), rgba(124, 92, 255, 1), rgba(47, 230, 255, 1));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .sub {
+            margin: 0;
+            color: var(--muted);
+            font-size: 15.5px;
+            line-height: 1.65;
+            max-width: 62ch;
+        }
+        
+        .cta-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap
+        }
+        
+        .btn {
+            appearance: none;
+            border: 0;
+            cursor: pointer;
+            padding: 12px 14px;
+            border-radius: 16px;
+            font-weight: 750;
+            letter-spacing: .2px;
+            transition: .18s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            user-select: none;
+        }
+        
+        .btn:active {
+            transform: translateY(1px) scale(.99)
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--brand), var(--brand2));
+            color: #071022;
+            box-shadow: 0 18px 60px rgba(124, 92, 255, .25);
+        }
+        
+        .btn-primary:hover {
+            filter: brightness(1.04)
+        }
+        
+        .btn-ghost {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .12);
+            color: rgba(234, 240, 255, .92);
+        }
+        
+        .btn-ghost:hover {
+            border-color: rgba(255, 255, 255, .22)
+        }
+        
+        .right-card {
+            border-radius: var(--r32);
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .12);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .right-card:before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: radial-gradient(900px 500px at 20% 20%, rgba(255, 200, 87, .12), transparent 60%), radial-gradient(800px 500px at 85% 35%, rgba(255, 77, 109, .12), transparent 60%);
+            pointer-events: none;
+        }
+        
+        .right-card>* {
+            position: relative
+        }
+        
+        .bio-title {
+            font-weight: 850;
+            font-size: 15px;
+            margin: 0 0 12px;
+            color: rgba(234, 240, 255, .9)
+        }
+        
+        .bio-list {
+            display: grid;
+            gap: 10px
+        }
+        
+        .bio-item {
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .12);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .bio-name {
+            font-weight: 780;
+            font-size: 14px
+        }
+        
+        .bio-id {
+            font-weight: 900;
+            font-size: 13px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(124, 92, 255, .18);
+            border: 1px solid rgba(124, 92, 255, .28);
+            color: rgba(234, 240, 255, .95);
+            white-space: nowrap;
+        }
+        
+        .note {
+            margin-top: 14px;
+            color: var(--muted2);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        /* SECTION */
+        
+        section {
+            padding: 18px 0 28px
+        }
+        
+        .section-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin: 10px 0 14px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: -.3px;
+            margin: 0;
+        }
+        
+        .section-desc {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13.5px;
+            line-height: 1.5;
+            max-width: 75ch
+        }
+        /* BIG SORT CARD */
+        
+        .sort-card {
+            border-radius: var(--r32);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .085), rgba(255, 255, 255, .04));
+            border: 1px solid rgba(255, 255, 255, .12);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .sort-top {
+            padding: 18px 18px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, .10);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .sort-name {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .sort-name h2 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 950;
+            letter-spacing: -.6px
+        }
+        
+        .sort-name p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13.5px;
+            line-height: 1.55;
+            max-width: 85ch
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end
+        }
+        
+        .pill {
+            padding: 10px 12px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .12);
+            color: rgba(234, 240, 255, .9);
+            font-weight: 750;
+            font-size: 13px;
+            cursor: pointer;
+            transition: .18s ease;
+            user-select: none;
+        }
+        
+        .pill:hover {
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, .22)
+        }
+        
+        .pill:active {
+            transform: translateY(0px) scale(.99)
+        }
+        
+        .pill.primary {
+            background: linear-gradient(135deg, rgba(124, 92, 255, .95), rgba(47, 230, 255, .95));
+            color: #071022;
+            border-color: transparent;
+        }
+        
+        .pill.good {
+            background: rgba(51, 242, 154, .12);
+            border-color: rgba(51, 242, 154, .22)
+        }
+        
+        .pill.bad {
+            background: rgba(255, 77, 109, .12);
+            border-color: rgba(255, 77, 109, .22)
+        }
+        
+        .sort-body {
+            padding: 18px
+        }
+        /* GOAL */
+        
+        .goal {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            padding: 14px 14px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .12);
+            margin-bottom: 16px;
+        }
+        
+        .goal strong {
+            font-weight: 900
+        }
+        
+        .goal span {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.55
+        }
+        
+        .goal-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+        
+        .badge {
+            font-size: 12px;
+            font-weight: 900;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(255, 255, 255, .05);
+            color: rgba(234, 240, 255, .92);
+        }
+        /* BIG NUMBERS */
+        
+        .numbers {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        
+        @media (max-width: 860px) {
+            .numbers {
+                grid-template-columns: repeat(3, minmax(0, 1fr))
+            }
+        }
+        
+        .num-card {
+            height: 480px;
+            border-radius: 26px;
+            background: radial-gradient(140px 320px at 20% 20%, rgba(255, 255, 255, .12), transparent 55%), linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03));
+            border: 1px solid rgba(255, 255, 255, .14);
+            box-shadow: 0 18px 55px rgba(0, 0, 0, .25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 44px;
+            font-weight: 950;
+            letter-spacing: -1px;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        .num-card:before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: radial-gradient(220px 120px at 20% 20%, rgba(124, 92, 255, .18), transparent 60%), radial-gradient(220px 120px at 85% 25%, rgba(47, 230, 255, .14), transparent 60%), radial-gradient(220px 120px at 45% 95%, rgba(51, 242, 154, .10), transparent 60%);
+            pointer-events: none;
+            filter: saturate(1.2);
+        }
+        
+        .num-card>span {
+            position: relative
+        }
+        
+        .num-card.dragging {
+            opacity: .7;
+            transform: scale(.98)
+        }
+        
+        .num-card.drop-hint {
+            outline: 3px dashed rgba(47, 230, 255, .55);
+            outline-offset: 4px
+        }
+        /* MANUAL ZONE */
+        
+        .num-card.correct-pos {
+            border-color: rgba(51, 242, 154, .35);
+            background: radial-gradient(220px 140px at 20% 20%, rgba(51, 242, 154, .25), transparent 60%), linear-gradient(180deg, rgba(51, 242, 154, .14), rgba(255, 255, 255, .03));
+            box-shadow: 0 18px 60px rgba(51, 242, 154, .12);
+        }
+        
+        .manual {
+            margin-top: 10px;
+            padding: 16px;
+            border-radius: 26px;
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .10);
+        }
+        
+        .manual-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 10px
+        }
+        
+        .manual-head h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 950
+        }
+        
+        .manual-head p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.55;
+            max-width: 80ch
+        }
+        
+        .manual-tools {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+        
+        .msg {
+            margin-top: 12px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            background: rgba(255, 255, 255, .04);
+            color: rgba(234, 240, 255, .92);
+            font-weight: 700;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+        
+        .msg.good {
+            border-color: rgba(51, 242, 154, .22);
+            background: rgba(51, 242, 154, .08)
+        }
+        
+        .msg.bad {
+            border-color: rgba(255, 77, 109, .25);
+            background: rgba(255, 77, 109, .08)
+        }
+        
+        footer {
+            padding: 30px 0 44px;
+            color: var(--muted2);
+            font-size: 13px
+        }
+        /* small helper */
+        
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
+        }
+    </style>
+</head>
+
+<body>
+    <header class="nav">
+        <div class="wrap">
+            <div class="nav-inner">
+                <div class="brand">
+                    <div class="logo" aria-hidden="true"></div>
+                    <div>
+                        <div style="font-size:14px; font-weight:900; line-height:1">Trio CEO</div>
+                        <div style="font-size:12px; color: rgba(234,240,255,.65); font-weight:650; margin-top:2px">Sorting Playground</div>
+                    </div>
+                </div>
+
+                <nav class="nav-links">
+                    <a class="chip" href="#home">Home</a>
+                    <a class="chip" href="#playground">Sorting</a>
+                    <a class="chip" href="#bubble">Bubble</a>
+                    <a class="chip" href="#insertion">Insertion</a>
+                    <a class="chip" href="#selection">Selection</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main id="home">
+        <div class="wrap">
+            <div class="hero">
+                <div class="hero-grid">
+                    <div class="hero-card">
+                        <div class="kicker">🚀 Interaktif • Manual Drag & Drop • Auto Sorting</div>
+                        <h1><span class="grad">TRIO CEO</span><br/>Sorting Playground</h1>
+                        <p class="sub">
+                            Ayo pelajari <b>Bubble Sort</b>, <b>Insertion Sort</b>, dan <b>Selection Sort</b> bersama Trio CEO. Kamu bisa main mode <b>manual drag & drop</b> atau lihat sistem menyusun otomatis langkah demi langkah.
+                        </p>
+
+                        <div class="cta-row">
+                            <a class="btn btn-primary" href="#playground">🎮 Ke Halaman Sorting</a>
+                            <button class="btn btn-ghost" id="toggleSound">🔊 Sound: ON</button>
+                        </div>
+
+                        <p class="note">
+                            Tips: Untuk mode manual, kamu bisa <b>drag kartu angka</b> lalu drop ke posisi yang kamu mau.
+                        </p>
+                    </div>
+
+                    <aside class="right-card">
+                        <p class="bio-title">Biodata Trio CEO</p>
+                        <div class="bio-list">
+                            <div class="bio-item">
+                                <div class="bio-name">Muhammad Yusuf Alfarabi</div>
+                                <div class="bio-id">59</div>
+                            </div>
+                            <div class="bio-item">
+                                <div class="bio-name">Kevin Stevino Arnovan</div>
+                                <div class="bio-id">121</div>
+                            </div>
+                            <div class="bio-item">
+                                <div class="bio-name">Abdul Vaiz Vahry Iskandar</div>
+                                <div class="bio-id">63</div>
+                            </div>
+                        </div>
+
+                    </aside>
+                </div>
+            </div>
+
+            <section id="playground">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title">Sorting Playground (Besar & Menonjol)</h2>
+                        <p class="section-desc">
+                            Setiap section di bawah ini dibuat besar seperti <b>kartu</b>. Atasnya ada target/goal, tengahnya angka besar, bawahnya mode manual.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- BUBBLE -->
+                <div class="sort-card" id="bubble" style="margin-bottom:18px">
+                    <div class="sort-top">
+                        <div class="sort-name">
+                            <h2>🫧 Bubble Sort</h2>
+                            <p>
+                                Bubble Sort bekerja dengan cara <b>membandingkan dua angka bersebelahan</b> dan melakukan swap jika urutannya salah.
+                            </p>
+                        </div>
+
+                        <div class="controls">
+                            <button class="pill" data-action="random" data-sort="bubble">🎲 Random</button>
+                            <button class="pill" data-action="check" data-sort="bubble">✅ Check</button>
+                            <button class="pill primary" data-action="auto" data-sort="bubble">⚡ Auto</button>
+                            <button class="pill" data-action="stop" data-sort="bubble">⏸ Stop</button>
+                        </div>
+                    </div>
+
+                    <div class="sort-body">
+                        <div class="goal">
+                            <div>
+                                <strong>Goal:</strong>
+                                <span>Susun angka menjadi urutan naik (ascending) sesuai hasil Bubble Sort.</span>
+                            </div>
+                            <div class="goal-right">
+                                <span class="badge">6 cards</span>
+                                <span class="badge">Mode: Auto + Manual</span>
+                            </div>
+                        </div>
+
+                        <div class="numbers" id="bubbleNumbers"></div>
+
+                        <div class="manual">
+                            <div class="manual-head">
+                                <div>
+                                    <h3>Mode Manual (Drag & Drop)</h3>
+                                    <p>Drag kartu angka lalu drop ke kartu lain untuk melakukan swap.</p>
+                                </div>
+                                <div class="manual-tools">
+                                    <button class="pill" data-action="hint" data-sort="bubble">💡 Hint</button>
+                                </div>
+                            </div>
+                            <div id="bubbleMsg" class="msg">Klik Random dulu, lalu susun manual atau pakai Auto.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INSERTION -->
+                <div class="sort-card" id="insertion" style="margin-bottom:18px">
+                    <div class="sort-top">
+                        <div class="sort-name">
+                            <h2>🧩 Insertion Sort</h2>
+                            <p>
+                                Insertion Sort membangun bagian kiri yang sudah terurut, lalu <b>menyisipkan</b> angka berikutnya ke posisi yang tepat.
+                            </p>
+                        </div>
+
+                        <div class="controls">
+                            <button class="pill" data-action="random" data-sort="insertion">🎲 Random</button>
+                            <button class="pill" data-action="check" data-sort="insertion">✅ Check</button>
+                            <button class="pill primary" data-action="auto" data-sort="insertion">⚡ Auto</button>
+                            <button class="pill" data-action="stop" data-sort="insertion">⏸ Stop</button>
+                        </div>
+                    </div>
+
+                    <div class="sort-body">
+                        <div class="goal">
+                            <div>
+                                <strong>Goal:</strong>
+                                <span>Susun angka menjadi urutan naik (ascending) sesuai hasil Insertion Sort.</span>
+                            </div>
+                            <div class="goal-right">
+                                <span class="badge">6 cards</span>
+                                <span class="badge">Mode: Auto + Manual</span>
+                            </div>
+                        </div>
+
+                        <div class="numbers" id="insertionNumbers"></div>
+
+                        <div class="manual">
+                            <div class="manual-head">
+                                <div>
+                                    <h3>Mode Manual (Drag & Drop)</h3>
+                                    <p>Drag kartu angka untuk swap. Untuk insertion, bayangkan kamu menyisipkan angka ke kiri.</p>
+                                </div>
+                                <div class="manual-tools">
+                                    <button class="pill" data-action="hint" data-sort="insertion">💡 Hint</button>
+                                </div>
+                            </div>
+                            <div id="insertionMsg" class="msg">Klik Random dulu, lalu susun manual atau pakai Auto.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SELECTION -->
+                <div class="sort-card" id="selection">
+                    <div class="sort-top">
+                        <div class="sort-name">
+                            <h2>🎯 Selection Sort</h2>
+                            <p>
+                                Selection Sort memilih <b>angka terkecil</b> dari bagian yang belum terurut, lalu menukarnya ke posisi depan.
+                            </p>
+                        </div>
+
+                        <div class="controls">
+                            <button class="pill" data-action="random" data-sort="selection">🎲 Random</button>
+                            <button class="pill" data-action="check" data-sort="selection">✅ Check</button>
+                            <button class="pill primary" data-action="auto" data-sort="selection">⚡ Auto</button>
+                            <button class="pill" data-action="stop" data-sort="selection">⏸ Stop</button>
+                        </div>
+                    </div>
+
+                    <div class="sort-body">
+                        <div class="goal">
+                            <div>
+                                <strong>Goal:</strong>
+                                <span>Susun angka menjadi urutan naik (ascending) sesuai hasil Selection Sort.</span>
+                            </div>
+                            <div class="goal-right">
+                                <span class="badge">6 cards</span>
+                                <span class="badge">Mode: Auto + Manual</span>
+                            </div>
+                        </div>
+
+                        <div class="numbers" id="selectionNumbers"></div>
+
+                        <div class="manual">
+                            <div class="manual-head">
+                                <div>
+                                    <h3>Mode Manual (Drag & Drop)</h3>
+                                    <p>Drag kartu angka untuk swap. Untuk selection, cari yang paling kecil lalu pindahkan ke depan.</p>
+                                </div>
+                                <div class="manual-tools">
+                                    <button class="pill" data-action="hint" data-sort="selection">💡 Hint</button>
+                                </div>
+                            </div>
+                            <div id="selectionMsg" class="msg">Klik Random dulu, lalu susun manual atau pakai Auto.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <footer>
+                <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px">
+                    <div>© <span id="year"></span> Trio CEO • Sorting Playground</div>
+                    <div class="mono" style="opacity:.8">1 file HTML • Vercel Ready</div>
+                </div>
+            </footer>
+        </div>
+    </main>
+
+    <script>
+        const SFX = {
+            correct: new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_63c49c13c8.mp3'),
+            swap: new Audio('https://cdn.pixabay.com/audio/2025/01/19/audio_af5c830f07.mp3'),
+
+            checkWin: new Audio('https://www.myinstants.com/media/sounds/happy-happy-happy-song.mp3'),
+            checkFail: new Audio('https://www.myinstants.com/media/sounds/error_CDOxCYm.mp3')
+        };
+
+        SFX.correct.preload = 'auto';
+        SFX.swap.preload = 'auto';
+
+        let soundOn = true;
+        const toggleSoundBtn = document.getElementById('toggleSound');
+
+        function playSound(audio) {
+            if (!soundOn) return;
+            try {
+                audio.currentTime = 0;
+                audio.play();
+            } catch (_) { /* ignore autoplay restrictions */ }
+        }
+
+        toggleSoundBtn.addEventListener('click', () => {
+            soundOn = !soundOn;
+            toggleSoundBtn.textContent = soundOn ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+            toggleSoundBtn.classList.toggle('btn-ghost', !soundOn);
+        });
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const SORTS = ['bubble', 'insertion', 'selection'];
+
+        const state = {
+            bubble: {
+                arr: [],
+                autoTimer: null
+            },
+            insertion: {
+                arr: [],
+                autoTimer: null
+            },
+            selection: {
+                arr: [],
+                autoTimer: null,
+                stepI: 0
+            }
+        };
+
+        const dom = {
+            bubble: {
+                numbers: document.getElementById('bubbleNumbers'),
+                msg: document.getElementById('bubbleMsg')
+            },
+            insertion: {
+                numbers: document.getElementById('insertionNumbers'),
+                msg: document.getElementById('insertionMsg')
+            },
+            selection: {
+                numbers: document.getElementById('selectionNumbers'),
+                msg: document.getElementById('selectionMsg')
+            }
+        };
+
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function makeRandomArray() {
+            // unique numbers biar lebih jelas
+            const set = new Set();
+            while (set.size < 6) {
+                set.add(randInt(10, 99));
+            }
+            return Array.from(set);
+        }
+
+        function sortedCopy(arr) {
+            return [...arr].sort((a, b) => a - b);
+        }
+
+        function isSortedAscending(arr) {
+            for (let i = 1; i < arr.length; i++)
+                if (arr[i - 1] > arr[i]) return false;
+            return true;
+        }
+
+        function getCorrectMask(arr) {
+            const target = sortedCopy(arr);
+            return arr.map((v, i) => v === target[i]);
+        }
+
+        function updateCorrectPositions(sort) {
+            const arr = state[sort].arr;
+            if (arr.length !== 6) return;
+
+            const mask = getCorrectMask(arr);
+
+            // apply class ke kartu yang sesuai
+            const cards = dom[sort].numbers.querySelectorAll('.num-card');
+            cards.forEach((card, idx) => {
+                card.classList.toggle('correct-pos', !!mask[idx]);
+            });
+        }
+
+        function setMsg(sort, text, type = '') {
+            const el = dom[sort].msg;
+            el.classList.remove('good', 'bad');
+            if (type) el.classList.add(type);
+            el.textContent = text;
+        }
+
+        function stopAuto(sort) {
+            const t = state[sort].autoTimer;
+            if (t) {
+                clearInterval(t);
+                state[sort].autoTimer = null;
+            }
+        }
+
+        function isAdjacent(i, j) {
+            return Math.abs(i - j) === 1;
+        }
+
+        function bubbleSwapAllowed(arr, from, to) {
+            if (!isAdjacent(from, to)) return false;
+            const i = Math.min(from, to);
+            return arr[i] > arr[i + 1];
+        }
+
+        function insertionSwapAllowed(arr, from, to) {
+            // hanya swap bersebelahan
+            if (!isAdjacent(from, to)) return false;
+
+            // harus swap ke kiri (menyisipkan)
+            // artinya: dari index lebih kanan ke index kiri
+            const left = Math.min(from, to);
+            const right = Math.max(from, to);
+
+            // harus benar-benar swap (left > right)
+            return arr[left] > arr[right];
+        }
+
+        function selectionSwapAllowed(arr, from, to, stepI) {
+            // aturan: hanya boleh swap index stepI dengan minIdx dari stepI..end
+            const i = stepI;
+            if (i < 0 || i >= arr.length) return false;
+
+            // cari min index dari i..end
+            let minIdx = i;
+            for (let k = i + 1; k < arr.length; k++) {
+                if (arr[k] < arr[minIdx]) minIdx = k;
+            }
+
+            // swap hanya boleh antara i dan minIdx
+            const ok = (from === i && to === minIdx) || (from === minIdx && to === i);
+            return ok;
+        }
+
+        function selectionAdvanceIfAlreadyMin() {
+            const a = state.selection.arr;
+            let i = state.selection.stepI;
+
+            while (i < a.length - 1) {
+                let minIdx = i;
+                for (let k = i + 1; k < a.length; k++) {
+                    if (a[k] < a[minIdx]) minIdx = k;
+                }
+
+                // kalau posisi i sudah benar (minIdx = i), langsung lanjut step berikutnya
+                if (minIdx === i) {
+                    i++;
+                    state.selection.stepI = i;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        function isSwapAllowed(sort, from, to) {
+            const arr = state[sort].arr;
+
+            if (sort === 'bubble') return bubbleSwapAllowed(arr, from, to);
+            if (sort === 'insertion') return insertionSwapAllowed(arr, from, to);
+
+            if (sort === 'selection') {
+                return selectionSwapAllowed(arr, from, to, state.selection.stepI);
+            }
+
+            return true;
+        }
+
+        function swapInArray(sort, i, j) {
+            const a = state[sort].arr;
+            const before = getCorrectMask(a);
+
+            [a[i], a[j]] = [a[j], a[i]];
+            playSound(SFX.swap);
+
+            render(sort);
+
+            const after = getCorrectMask(a);
+
+            let improved = false;
+            for (let k = 0; k < after.length; k++) {
+                if (!before[k] && after[k]) {
+                    improved = true;
+                    break;
+                }
+            }
+
+            if (improved) playSound(SFX.correct);
+
+            return true;
+        }
+
+        function render(sort) {
+            const holder = dom[sort].numbers;
+            holder.innerHTML = '';
+
+            const arr = state[sort].arr;
+            for (let idx = 0; idx < arr.length; idx++) {
+                const card = document.createElement('div');
+                card.className = 'num-card';
+                if (sort === 'selection' && idx === state.selection.stepI) {
+                    card.style.outline = '4px solid rgba(255, 200, 87, .65)';
+                    card.style.outlineOffset = '4px';
+                }
+
+                card.setAttribute('draggable', 'true');
+                card.dataset.index = String(idx);
+
+                const span = document.createElement('span');
+                span.textContent = String(arr[idx]);
+                card.appendChild(span);
+
+                // drag start
+                card.addEventListener('dragstart', (e) => {
+                    card.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', String(idx));
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                    document.querySelectorAll('.num-card').forEach(c => c.classList.remove('drop-hint'));
+                });
+
+                // drag over
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    card.classList.add('drop-hint');
+                });
+
+                card.addEventListener('dragleave', () => {
+                    card.classList.remove('drop-hint');
+                });
+
+                // drop -> swap
+                // drop -> swap
+                card.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const from = Number(e.dataTransfer.getData('text/plain'));
+                    const to = Number(card.dataset.index);
+                    card.classList.remove('drop-hint');
+
+                    if (Number.isNaN(from) || Number.isNaN(to)) return;
+                    if (from === to) return;
+
+                    stopAuto(sort);
+
+                    // 🔥 VALIDASI SWAP SESUAI ALGORITMA
+                    if (!isSwapAllowed(sort, from, to)) {
+                        setMsg(sort, '❌ Swap tidak sesuai aturan ' + sort + '!', 'bad');
+                        playSound(SFX.checkFail);
+                        return;
+                    }
+
+                    // ✅ SELECTION: swap sekali, naik stepI
+                    if (sort === 'selection') {
+                        swapInArray(sort, from, to);
+
+                        state.selection.stepI++;
+
+                        selectionAdvanceIfAlreadyMin();
+
+                        if (state.selection.stepI >= state.selection.arr.length - 1) {
+                            setMsg(sort, 'Selection manual selesai. Klik Check!', 'good');
+                            playSound(SFX.correct);
+                            return;
+                        }
+
+                        setMsg(sort, `Selection step lanjut: sekarang posisi aktif i = ${state.selection.stepI}`, '');
+                        return;
+                    }
+
+                    // ✅ Bubble & Insertion normal
+                    swapInArray(sort, from, to);
+                    setMsg(sort, 'Swap valid. Lanjutkan sampai urut!', '');
+                });
+
+
+
+                holder.appendChild(card);
+            }
+
+            updateCorrectPositions(sort);
+
+        }
+
+        function randomize(sort) {
+            stopAuto(sort);
+            state[sort].arr = makeRandomArray();
+            if (sort === 'selection') state.selection.stepI = 0;
+            render(sort);
+            setMsg(sort, 'Angka di-random. Kamu bisa drag & drop manual atau klik Auto.', '');
+            if (sort === 'selection') {
+                setMsg(sort, 'Selection dimulai dari i=0. Swap hanya boleh posisi i dengan angka terkecil di kanan.', '');
+            }
+        }
+
+
+        function check(sort) {
+            const arr = state[sort].arr;
+            if (arr.length !== 6) {
+                setMsg(sort, 'Klik Random dulu ya.', 'bad');
+                playSound(SFX.checkFail);
+                return;
+            }
+
+            if (isSortedAscending(arr)) {
+                setMsg(sort, 'BENAR! Angka sudah urut ascending 🎉', 'good');
+                playSound(SFX.checkWin);
+            } else {
+                setMsg(sort, 'Masih ada yang salah. Susun sampai urut ascending.', 'bad');
+                playSound(SFX.checkFail);
+            }
+        }
+
+
+        function hint(sort) {
+            const arr = state[sort].arr;
+            if (arr.length !== 6) {
+                setMsg(sort, 'Klik Random dulu ya.', 'bad');
+                return;
+            }
+            const target = sortedCopy(arr);
+            setMsg(sort, 'Hint: Target akhirnya adalah [' + target.join(', ') + ']', '');
+        }
+
+        /* =========================
+           AUTO SORT (step-by-step)
+           ========================= */
+
+        function autoBubble(sort) {
+            stopAuto(sort);
+            const a = state[sort].arr;
+            if (a.length !== 6) {
+                setMsg(sort, 'Klik Random dulu ya.', 'bad');
+                return;
+            }
+
+            let i = 0,
+                j = 0;
+            setMsg(sort, 'Auto Bubble berjalan... (swap jika kiri > kanan)', '');
+
+            state[sort].autoTimer = setInterval(() => {
+                if (i >= a.length - 1) {
+                    stopAuto(sort);
+                    setMsg(sort, 'Auto selesai. Klik Check untuk validasi.', 'good');
+                    playSound(SFX.correct);
+                    return;
+
+                }
+
+                if (j >= a.length - 1 - i) {
+                    j = 0;
+                    i++;
+                    return;
+                }
+
+                if (a[j] > a[j + 1]) {
+                    [a[j], a[j + 1]] = [a[j + 1], a[j]];
+                    playSound(SFX.swap);
+                    render(sort);
+                }
+                j++;
+            }, 520);
+        }
+
+        function autoInsertion(sort) {
+            stopAuto(sort);
+            const a = state[sort].arr;
+            if (a.length !== 6) {
+                setMsg(sort, 'Klik Random dulu ya.', 'bad');
+                return;
+            }
+
+            let i = 1;
+            let j = 1;
+            setMsg(sort, 'Auto Insertion berjalan... (menyisipkan angka ke kiri)', '');
+
+            state[sort].autoTimer = setInterval(() => {
+                if (i >= a.length) {
+                    stopAuto(sort);
+                    setMsg(sort, 'Auto selesai. Klik Check untuk validasi.', 'good');
+                    return;
+                }
+
+                if (j > 0 && a[j - 1] > a[j]) {
+                    [a[j - 1], a[j]] = [a[j], a[j - 1]];
+                    playSound(SFX.swap);
+                    render(sort);
+                    j--;
+                } else {
+                    i++;
+                    j = i;
+                }
+            }, 520);
+        }
+
+        function autoSelection(sort) {
+            stopAuto(sort);
+            const a = state[sort].arr;
+            if (a.length !== 6) {
+                setMsg(sort, 'Klik Random dulu ya.', 'bad');
+                return;
+            }
+
+            let i = 0;
+            let j = 1;
+            let minIdx = 0;
+            setMsg(sort, 'Auto Selection berjalan... (cari terkecil lalu swap)', '');
+
+            state[sort].autoTimer = setInterval(() => {
+                if (i >= a.length - 1) {
+                    stopAuto(sort);
+                    setMsg(sort, 'Auto selesai. Klik Check untuk validasi.', 'good');
+                    return;
+                }
+
+                if (j < a.length) {
+                    if (a[j] < a[minIdx]) minIdx = j;
+                    j++;
+                    return;
+                }
+
+                // end scan -> swap i with minIdx
+                if (minIdx !== i) {
+                    [a[i], a[minIdx]] = [a[minIdx], a[i]];
+                    playSound(SFX.swap);
+                    render(sort);
+                }
+
+                i++;
+                minIdx = i;
+                j = i + 1;
+            }, 520);
+        }
+
+        function auto(sort) {
+            if (sort === 'bubble') return autoBubble(sort);
+            if (sort === 'insertion') return autoInsertion(sort);
+            if (sort === 'selection') return autoSelection(sort);
+        }
+
+        /* =========================
+           BUTTON HANDLERS
+           ========================= */
+
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action][data-sort]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            const sort = btn.dataset.sort;
+
+            if (!SORTS.includes(sort)) return;
+
+            if (action === 'random') return randomize(sort);
+            if (action === 'check') return check(sort);
+            if (action === 'auto') return auto(sort);
+            if (action === 'stop') {
+                stopAuto(sort);
+                setMsg(sort, 'Auto dihentikan. Kamu bisa lanjut manual.', '');
+                return;
+            }
+            if (action === 'hint') return hint(sort);
+        });
+
+        // init
+        SORTS.forEach(s => {
+            state[s].arr = makeRandomArray();
+            render(s);
+            setMsg(s, 'Siap! Kamu bisa langsung drag & drop atau klik Auto.', '');
+        });
+    </script>
+</body>
+
+</html>
