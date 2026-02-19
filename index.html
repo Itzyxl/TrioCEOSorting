@@ -472,8 +472,10 @@
         }
         
         .num-card {
-            height: 220px;
-            border-radius: 26px; /* Global default */
+            height: auto;
+            aspect-ratio: 2 / 3;
+            /* KARTU TINGGI (portrait) */
+            border-radius: 26px;
             background: radial-gradient(140px 320px at 20% 20%, rgba(255, 255, 255, .12), transparent 55%), linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03));
             border: 1px solid rgba(255, 255, 255, .14);
             box-shadow: 0 18px 55px rgba(0, 0, 0, .25);
@@ -496,8 +498,8 @@
             pointer-events: none;
             filter: saturate(1.2);
         }
-        
         /* Mobile overrides placed AFTER standard definitions to ensure they apply */
+        
         @media (max-width: 860px) {
             .numbers {
                 grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -507,7 +509,8 @@
                 height: 64px !important;
                 aspect-ratio: unset;
                 font-size: 14px !important;
-                border-radius: 0; /* STRICTLY 0 for mobile */
+                border-radius: 0;
+                /* STRICTLY 0 for mobile */
             }
         }
         
@@ -601,15 +604,23 @@
         .mono {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
         }
-
         /* SWAP ANIMATION */
+        
         @keyframes swapFloat {
-            0%   { transform: translateY(0)     scale(1);    }
-            30%  { transform: translateY(-42px) scale(1.08); }
-            70%  { transform: translateY(-42px) scale(1.08); }
-            100% { transform: translateY(0)     scale(1);    }
+            0% {
+                transform: translateY(0) scale(1);
+            }
+            30% {
+                transform: translateY(-42px) scale(1.08);
+            }
+            70% {
+                transform: translateY(-42px) scale(1.08);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+            }
         }
-
+        
         .num-card.swapping {
             animation: swapFloat 0.44s cubic-bezier(.34, 1.56, .64, 1) both;
             position: relative;
@@ -881,9 +892,25 @@
         const SORTS = ['bubble', 'insertion', 'selection'];
 
         const state = {
-            bubble:    { arr: [], autoTimer: null, animTimers: [], gen: 0 },
-            insertion: { arr: [], autoTimer: null, animTimers: [], gen: 0 },
-            selection: { arr: [], autoTimer: null, animTimers: [], gen: 0, stepI: 0 }
+            bubble: {
+                arr: [],
+                autoTimer: null,
+                animTimers: [],
+                gen: 0
+            },
+            insertion: {
+                arr: [],
+                autoTimer: null,
+                animTimers: [],
+                gen: 0
+            },
+            selection: {
+                arr: [],
+                autoTimer: null,
+                animTimers: [],
+                gen: 0,
+                stepI: 0
+            }
         };
 
         const dom = {
@@ -950,7 +977,10 @@
         }
 
         function stopAuto(sort) {
-            if (state[sort].autoTimer) { clearTimeout(state[sort].autoTimer); state[sort].autoTimer = null; }
+            if (state[sort].autoTimer) {
+                clearTimeout(state[sort].autoTimer);
+                state[sort].autoTimer = null;
+            }
             state[sort].animTimers.forEach(t => clearTimeout(t));
             state[sort].animTimers = [];
             state[sort].gen++;
@@ -962,19 +992,22 @@
             const cards = dom[sort].numbers.querySelectorAll('.num-card');
             const cardA = cards[idxA];
             const cardB = cards[idxB];
-            if (!cardA || !cardB) { if (myGen === state[sort].gen) onDone(); return; }
+            if (!cardA || !cardB) {
+                if (myGen === state[sort].gen) onDone();
+                return;
+            }
 
             const dx = cardB.getBoundingClientRect().left - cardA.getBoundingClientRect().left;
 
             [cardA, cardB].forEach(c => {
                 c.style.position = 'relative';
-                c.style.zIndex   = '20';
+                c.style.zIndex = '20';
                 if (doSwap) {
                     c.style.borderColor = 'rgba(47,230,255,.80)';
-                    c.style.boxShadow   = '0 36px 90px rgba(47,230,255,.35)';
+                    c.style.boxShadow = '0 36px 90px rgba(47,230,255,.35)';
                 } else {
                     c.style.borderColor = 'rgba(255,200,87,.75)';
-                    c.style.boxShadow   = '0 24px 60px rgba(255,200,87,.28)';
+                    c.style.boxShadow = '0 24px 60px rgba(255,200,87,.28)';
                 }
             });
 
@@ -992,16 +1025,16 @@
                 const t1 = setTimeout(() => {
                     cardA.style.transition = 'transform 0.36s cubic-bezier(.4,0,.2,1)';
                     cardB.style.transition = 'transform 0.36s cubic-bezier(.4,0,.2,1)';
-                    cardA.style.transform  = `translate(${dx}px, -54px) scale(1.09)`;
-                    cardB.style.transform  = `translate(${-dx}px, -54px) scale(1.09)`;
+                    cardA.style.transform = `translate(${dx}px, -54px) scale(1.09)`;
+                    cardB.style.transform = `translate(${-dx}px, -54px) scale(1.09)`;
                 }, 260);
 
                 /* Phase 3 – land at new positions */
                 const t2 = setTimeout(() => {
                     cardA.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
                     cardB.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
-                    cardA.style.transform  = `translate(${dx}px, 0) scale(1)`;
-                    cardB.style.transform  = `translate(${-dx}px, 0) scale(1)`;
+                    cardA.style.transform = `translate(${dx}px, 0) scale(1)`;
+                    cardB.style.transform = `translate(${-dx}px, 0) scale(1)`;
                 }, 630);
 
                 const t3 = setTimeout(() => {
@@ -1015,8 +1048,8 @@
                 const t1 = setTimeout(() => {
                     cardA.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
                     cardB.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
-                    cardA.style.transform  = 'translateY(0) scale(1)';
-                    cardB.style.transform  = 'translateY(0) scale(1)';
+                    cardA.style.transform = 'translateY(0) scale(1)';
+                    cardB.style.transform = 'translateY(0) scale(1)';
                 }, 380);
 
                 const t2 = setTimeout(() => {
