@@ -470,11 +470,11 @@
             gap: 14px;
             margin-bottom: 16px;
         }
+        /* DESKTOP/LAPTOP: kartu portrait */
         
         .num-card {
             height: auto;
             aspect-ratio: 2 / 3;
-            /* KARTU TINGGI (portrait) */
             border-radius: 26px;
             background: radial-gradient(140px 320px at 20% 20%, rgba(255, 255, 255, .12), transparent 55%), linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03));
             border: 1px solid rgba(255, 255, 255, .14);
@@ -498,19 +498,18 @@
             pointer-events: none;
             filter: saturate(1.2);
         }
-        /* Mobile overrides placed AFTER standard definitions to ensure they apply */
+        /* MOBILE: 5 kolom, kartu lebih besar, aspect-ratio dimatikan */
         
         @media (max-width: 860px) {
             .numbers {
-                grid-template-columns: repeat(6, minmax(0, 1fr));
-                gap: 6px;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                gap: 8px;
             }
             .num-card {
-                height: 64px !important;
-                aspect-ratio: unset;
-                font-size: 14px !important;
-                border-radius: 0;
-                /* STRICTLY 0 for mobile */
+                aspect-ratio: auto;
+                height: 82px !important;
+                font-size: 16px !important;
+                border-radius: 16px;
             }
         }
         
@@ -527,13 +526,14 @@
             outline: 3px dashed rgba(47, 230, 255, .55);
             outline-offset: 4px
         }
-        /* MANUAL ZONE */
+        /* correct pos */
         
         .num-card.correct-pos {
             border-color: rgba(51, 242, 154, .35);
             background: radial-gradient(220px 140px at 20% 20%, rgba(51, 242, 154, .25), transparent 60%), linear-gradient(180deg, rgba(51, 242, 154, .14), rgba(255, 255, 255, .03));
             box-shadow: 0 18px 60px rgba(51, 242, 154, .12);
         }
+        /* MANUAL ZONE */
         
         .manual {
             margin-top: 10px;
@@ -639,7 +639,8 @@
                     <div class="logo" aria-hidden="true"></div>
                     <div>
                         <div style="font-size:14px; font-weight:900; line-height:1">Trio CEO</div>
-                        <div style="font-size:12px; color: rgba(234,240,255,.65); font-weight:650; margin-top:2px">Sorting Playground</div>
+                        <div style="font-size:12px; color: rgba(234,240,255,.65); font-weight:650; margin-top:2px">Sorting Playground
+                        </div>
                     </div>
                 </div>
 
@@ -660,7 +661,7 @@
                 <div class="hero-grid">
                     <div class="hero-card">
                         <div class="kicker">🚀 Interaktif • Manual Drag & Drop • Auto Sorting</div>
-                        <h1><span class="grad">TRIO CEO</span><br/>Sorting Playground</h1>
+                        <h1><span class="grad">TRIO CEO</span><br />Sorting Playground</h1>
                         <p class="sub">
                             Ayo pelajari <b>Bubble Sort</b>, <b>Insertion Sort</b>, dan <b>Selection Sort</b> bersama Trio CEO. Kamu bisa main mode <b>manual drag & drop</b> atau lihat sistem menyusun otomatis langkah demi langkah.
                         </p>
@@ -691,7 +692,6 @@
                                 <div class="bio-id">63</div>
                             </div>
                         </div>
-
                     </aside>
                 </div>
             </div>
@@ -731,7 +731,7 @@
                                 <span>Susun angka menjadi urutan naik (ascending) sesuai hasil Bubble Sort.</span>
                             </div>
                             <div class="goal-right">
-                                <span class="badge">6 cards</span>
+                                <span class="badge" id="bubbleBadgeCount"></span>
                                 <span class="badge">Mode: Auto + Manual</span>
                             </div>
                         </div>
@@ -778,7 +778,7 @@
                                 <span>Susun angka menjadi urutan naik (ascending) sesuai hasil Insertion Sort.</span>
                             </div>
                             <div class="goal-right">
-                                <span class="badge">6 cards</span>
+                                <span class="badge" id="insertionBadgeCount"></span>
                                 <span class="badge">Mode: Auto + Manual</span>
                             </div>
                         </div>
@@ -825,7 +825,7 @@
                                 <span>Susun angka menjadi urutan naik (ascending) sesuai hasil Selection Sort.</span>
                             </div>
                             <div class="goal-right">
-                                <span class="badge">6 cards</span>
+                                <span class="badge" id="selectionBadgeCount"></span>
                                 <span class="badge">Mode: Auto + Manual</span>
                             </div>
                         </div>
@@ -862,7 +862,6 @@
         const SFX = {
             correct: new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_63c49c13c8.mp3'),
             swap: new Audio('https://cdn.pixabay.com/audio/2025/01/19/audio_af5c830f07.mp3'),
-
             checkWin: new Audio('https://www.myinstants.com/media/sounds/happy-happy-happy-song.mp3'),
             checkFail: new Audio('https://www.myinstants.com/media/sounds/error_CDOxCYm.mp3')
         };
@@ -878,7 +877,7 @@
             try {
                 audio.currentTime = 0;
                 audio.play();
-            } catch (_) { /* ignore autoplay restrictions */ }
+            } catch (_) {}
         }
 
         toggleSoundBtn.addEventListener('click', () => {
@@ -928,16 +927,29 @@
             }
         };
 
+        function isMobile() {
+            return window.matchMedia("(max-width: 860px)").matches;
+        }
+
+        function getCardCount() {
+            return isMobile() ? 5 : 6;
+        }
+
+        function updateBadges() {
+            const txt = getCardCount() + " cards";
+            document.getElementById("bubbleBadgeCount").textContent = txt;
+            document.getElementById("insertionBadgeCount").textContent = txt;
+            document.getElementById("selectionBadgeCount").textContent = txt;
+        }
+
         function randInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
         function makeRandomArray() {
-            // unique numbers biar lebih jelas
+            const count = getCardCount();
             const set = new Set();
-            while (set.size < 6) {
-                set.add(randInt(10, 99));
-            }
+            while (set.size < count) set.add(randInt(10, 99));
             return Array.from(set);
         }
 
@@ -958,11 +970,9 @@
 
         function updateCorrectPositions(sort) {
             const arr = state[sort].arr;
-            if (arr.length !== 6) return;
+            if (arr.length !== getCardCount()) return;
 
             const mask = getCorrectMask(arr);
-
-            // apply class ke kartu yang sesuai
             const cards = dom[sort].numbers.querySelectorAll('.num-card');
             cards.forEach((card, idx) => {
                 card.classList.toggle('correct-pos', !!mask[idx]);
@@ -986,7 +996,6 @@
             state[sort].gen++;
         }
 
-        /* Lift up → (slide if swap) → land */
         function animateCompare(sort, idxA, idxB, doSwap, onDone) {
             const myGen = state[sort].gen;
             const cards = dom[sort].numbers.querySelectorAll('.num-card');
@@ -1011,7 +1020,6 @@
                 }
             });
 
-            /* Phase 1 – lift */
             cardA.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
             cardB.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
             requestAnimationFrame(() => {
@@ -1021,7 +1029,6 @@
 
             let timers;
             if (doSwap) {
-                /* Phase 2 – slide across while airborne */
                 const t1 = setTimeout(() => {
                     cardA.style.transition = 'transform 0.36s cubic-bezier(.4,0,.2,1)';
                     cardB.style.transition = 'transform 0.36s cubic-bezier(.4,0,.2,1)';
@@ -1029,7 +1036,6 @@
                     cardB.style.transform = `translate(${-dx}px, -54px) scale(1.09)`;
                 }, 260);
 
-                /* Phase 3 – land at new positions */
                 const t2 = setTimeout(() => {
                     cardA.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
                     cardB.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
@@ -1044,7 +1050,6 @@
 
                 timers = [t1, t2, t3];
             } else {
-                /* No swap – hold up briefly, then land back */
                 const t1 = setTimeout(() => {
                     cardA.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
                     cardB.style.transition = 'transform 0.22s cubic-bezier(.34,1.56,.64,1)';
@@ -1074,32 +1079,22 @@
         }
 
         function insertionSwapAllowed(arr, from, to) {
-            // hanya swap bersebelahan
             if (!isAdjacent(from, to)) return false;
-
-            // harus swap ke kiri (menyisipkan)
-            // artinya: dari index lebih kanan ke index kiri
             const left = Math.min(from, to);
             const right = Math.max(from, to);
-
-            // harus benar-benar swap (left > right)
             return arr[left] > arr[right];
         }
 
         function selectionSwapAllowed(arr, from, to, stepI) {
-            // aturan: hanya boleh swap index stepI dengan minIdx dari stepI..end
             const i = stepI;
             if (i < 0 || i >= arr.length) return false;
 
-            // cari min index dari i..end
             let minIdx = i;
             for (let k = i + 1; k < arr.length; k++) {
                 if (arr[k] < arr[minIdx]) minIdx = k;
             }
 
-            // swap hanya boleh antara i dan minIdx
-            const ok = (from === i && to === minIdx) || (from === minIdx && to === i);
-            return ok;
+            return (from === i && to === minIdx) || (from === minIdx && to === i);
         }
 
         function selectionAdvanceIfAlreadyMin() {
@@ -1111,8 +1106,6 @@
                 for (let k = i + 1; k < a.length; k++) {
                     if (a[k] < a[minIdx]) minIdx = k;
                 }
-
-                // kalau posisi i sudah benar (minIdx = i), langsung lanjut step berikutnya
                 if (minIdx === i) {
                     i++;
                     state.selection.stepI = i;
@@ -1127,10 +1120,7 @@
 
             if (sort === 'bubble') return bubbleSwapAllowed(arr, from, to);
             if (sort === 'insertion') return insertionSwapAllowed(arr, from, to);
-
-            if (sort === 'selection') {
-                return selectionSwapAllowed(arr, from, to, state.selection.stepI);
-            }
+            if (sort === 'selection') return selectionSwapAllowed(arr, from, to, state.selection.stepI);
 
             return true;
         }
@@ -1167,6 +1157,7 @@
             for (let idx = 0; idx < arr.length; idx++) {
                 const card = document.createElement('div');
                 card.className = 'num-card';
+
                 if (sort === 'selection' && idx === state.selection.stepI) {
                     card.style.outline = '4px solid rgba(255, 200, 87, .65)';
                     card.style.outlineOffset = '4px';
@@ -1179,7 +1170,6 @@
                 span.textContent = String(arr[idx]);
                 card.appendChild(span);
 
-                // drag start
                 card.addEventListener('dragstart', (e) => {
                     card.classList.add('dragging');
                     e.dataTransfer.setData('text/plain', String(idx));
@@ -1191,7 +1181,6 @@
                     document.querySelectorAll('.num-card').forEach(c => c.classList.remove('drop-hint'));
                 });
 
-                // drag over
                 card.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     card.classList.add('drop-hint');
@@ -1201,8 +1190,6 @@
                     card.classList.remove('drop-hint');
                 });
 
-                // drop -> swap
-                // drop -> swap
                 card.addEventListener('drop', (e) => {
                     e.preventDefault();
                     const from = Number(e.dataTransfer.getData('text/plain'));
@@ -1214,19 +1201,16 @@
 
                     stopAuto(sort);
 
-                    // 🔥 VALIDASI SWAP SESUAI ALGORITMA
                     if (!isSwapAllowed(sort, from, to)) {
                         setMsg(sort, '❌ Swap tidak sesuai aturan ' + sort + '!', 'bad');
                         playSound(SFX.checkFail);
                         return;
                     }
 
-                    // ✅ SELECTION: swap sekali, naik stepI
                     if (sort === 'selection') {
                         swapInArray(sort, from, to);
 
                         state.selection.stepI++;
-
                         selectionAdvanceIfAlreadyMin();
 
                         if (state.selection.stepI >= state.selection.arr.length - 1) {
@@ -1239,35 +1223,34 @@
                         return;
                     }
 
-                    // ✅ Bubble & Insertion normal
                     swapInArray(sort, from, to);
                     setMsg(sort, 'Swap valid. Lanjutkan sampai urut!', '');
                 });
-
-
 
                 holder.appendChild(card);
             }
 
             updateCorrectPositions(sort);
-
         }
 
         function randomize(sort) {
             stopAuto(sort);
+            updateBadges();
+
             state[sort].arr = makeRandomArray();
             if (sort === 'selection') state.selection.stepI = 0;
+
             render(sort);
+
             setMsg(sort, 'Angka di-random. Kamu bisa drag & drop manual atau klik Auto.', '');
             if (sort === 'selection') {
                 setMsg(sort, 'Selection dimulai dari i=0. Swap hanya boleh posisi i dengan angka terkecil di kanan.', '');
             }
         }
 
-
         function check(sort) {
             const arr = state[sort].arr;
-            if (arr.length !== 6) {
+            if (arr.length !== getCardCount()) {
                 setMsg(sort, 'Klik Random dulu ya.', 'bad');
                 playSound(SFX.checkFail);
                 return;
@@ -1282,10 +1265,9 @@
             }
         }
 
-
         function hint(sort) {
             const arr = state[sort].arr;
-            if (arr.length !== 6) {
+            if (arr.length !== getCardCount()) {
                 setMsg(sort, 'Klik Random dulu ya.', 'bad');
                 return;
             }
@@ -1327,7 +1309,7 @@
         function autoBubble(sort) {
             stopAuto(sort);
             const a = state[sort].arr;
-            if (a.length !== 6) {
+            if (a.length !== getCardCount()) {
                 setMsg(sort, 'Klik Random dulu ya.', 'bad');
                 return;
             }
@@ -1366,7 +1348,7 @@
         function autoInsertion(sort) {
             stopAuto(sort);
             const a = state[sort].arr;
-            if (a.length !== 6) {
+            if (a.length !== getCardCount()) {
                 setMsg(sort, 'Klik Random dulu ya.', 'bad');
                 return;
             }
@@ -1387,14 +1369,12 @@
 
             if (j < a.length) {
                 const nextMin = a[j] < a[minIdx] ? j : minIdx;
-                /* peek: show comparison between current minimum and candidate j */
                 animateCompare(sort, minIdx, j, false, () => {
                     state[sort].autoTimer = setTimeout(() => autoSelectionScan(sort, i, j + 1, nextMin), 80);
                 });
                 return;
             }
 
-            // scan done -> swap
             if (minIdx !== i) {
                 animateCompare(sort, i, minIdx, true, () => {
                     [a[i], a[minIdx]] = [a[minIdx], a[i]];
@@ -1410,7 +1390,7 @@
         function autoSelection(sort) {
             stopAuto(sort);
             const a = state[sort].arr;
-            if (a.length !== 6) {
+            if (a.length !== getCardCount()) {
                 setMsg(sort, 'Klik Random dulu ya.', 'bad');
                 return;
             }
@@ -1448,11 +1428,33 @@
             if (action === 'hint') return hint(sort);
         });
 
+        /* =========================
+           INIT + RESIZE SAFE
+           ========================= */
+
+        let lastCount = getCardCount();
+
+        function fullResetAll() {
+            updateBadges();
+            SORTS.forEach(s => {
+                stopAuto(s);
+                state[s].arr = makeRandomArray();
+                if (s === 'selection') state.selection.stepI = 0;
+                render(s);
+                setMsg(s, 'Siap! Kamu bisa langsung drag & drop atau klik Auto.', '');
+            });
+        }
+
         // init
-        SORTS.forEach(s => {
-            state[s].arr = makeRandomArray();
-            render(s);
-            setMsg(s, 'Siap! Kamu bisa langsung drag & drop atau klik Auto.', '');
+        fullResetAll();
+
+        // kalau resize menyebabkan card count berubah 6 <-> 5
+        window.addEventListener("resize", () => {
+            const now = getCardCount();
+            if (now !== lastCount) {
+                lastCount = now;
+                fullResetAll();
+            }
         });
     </script>
 </body>
